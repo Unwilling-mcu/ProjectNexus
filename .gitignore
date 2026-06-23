@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pth
+checkpoints/reflens_last.pt
+dataset/
+.env
+node_modules/
+*.egg-info/
+.DS_Store

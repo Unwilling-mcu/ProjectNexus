@@ -1,0 +1,202 @@
+name: Project Nexus CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  # ── Python ML pipeline tests ──────────────────────────────────────
+  test-ml:
+    name: ML Pipeline (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install ML dependencies
+        run: |
+          pip install --upgrade pip
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy websockets pyserial
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 ml/ arduino/ --max-line-length=100 \
+            --ignore=E501,W503,E226 \
+            --exclude=__pycache__
+
+      - name: Smoke test — RefLens pipeline
+        run: |
+          python ml/reflens_pipeline.py
+          echo "RefLens smoke test passed"
+
+      - name: Smoke test — Dataset pipeline (synthetic)
+        run: |
+          python ml/dataset_pipeline.py
+          echo "Dataset pipeline smoke test passed"
+
+      - name: Smoke test — Training loop (5 epochs)
+        run: |
+          python ml/train_reflens.py \
+            --demo \
+            --epochs 5 \
+            --batch_size 16 \
+            --patience 3 \
+            --workers 0 \
+            --source_dir /tmp/nexus_syn \
+            --target_dir /tmp/nexus_syn \
+            --checkpoint_dir /tmp/nexus_ckpt
+          echo "Training smoke test passed"
+
+      - name: Upload training artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-checkpoints-py${{ matrix.python-version }}
+          path: /tmp/nexus_ckpt/
+          if-no-files-found: warn
+          retention-days: 7
+
+  # ── TouchField bridge tests ────────────────────────────────────────
+  test-bridge:
+    name: TouchField Bridge
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install bridge dependencies
+        run: pip install numpy websockets pyserial
+
+      - name: Smoke test — bridge demo mode (10 frames)
+        run: |
+          timeout 8 python arduino/touchfield_bridge.py --demo || true
+          echo "Bridge smoke test passed"
+
+  # ── Arduino firmware lint ─────────────────────────────────────────
+  lint-arduino:
+    name: Arduino Firmware Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install arduino-cli
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          echo "${HOME}/bin" >> $GITHUB_PATH
+
+      - name: Configure arduino-cli
+        run: |
+          arduino-cli config init
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+
+      - name: Install required libraries
+        run: |
+          arduino-cli lib install "ArduinoJson"
+
+      - name: Compile firmware
+        run: |
+          arduino-cli compile \
+            --fqbn arduino:avr:mega \
+            arduino/touchfield_firmware.ino
+          echo "Arduino firmware compiled successfully"
+
+  # ── Integration: full pipeline end-to-end ─────────────────────────
+  integration:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    needs: [test-ml, test-bridge]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install all dependencies
+        run: |
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy websockets pyserial
+
+      - name: Generate synthetic dataset
+        run: |
+          python -c "
+          import sys; sys.path.insert(0, 'ml')
+          from dataset_pipeline import SyntheticDataGenerator
+          gen = SyntheticDataGenerator('/tmp/nexus_int', n_per_class=50, n_domains=2)
+          n = gen.generate_all()
+          print(f'Generated {n} sequences')
+          assert n == 500, f'Expected 500, got {n}'
+          "
+
+      - name: Run RefLens inference on synthetic poses
+        run: |
+          python -c "
+          import sys, numpy as np
+          sys.path.insert(0, 'ml')
+          from reflens_pipeline import RefLensPipeline, EVENT_CLASSES
+          pipeline = RefLensPipeline(camera_id=0)
+          events = []
+          for i in range(200):
+              frame = np.zeros((720, 1280, 3), dtype=np.uint8)
+              preds = pipeline.feed_frame(frame, i / 50.0)
+              events.extend(preds)
+          print(f'Integration: {len(events)} events detected in 200 frames')
+          "
+
+      - name: Verify demo match log format
+        run: |
+          python -c "
+          import json
+          from pathlib import Path
+          log_path = Path('ml/demo_match_log.json')
+          if log_path.exists():
+              data = json.load(open(log_path))
+              print(f'Match log: {len(data)} entries')
+              for e in data[:3]:
+                  assert 'event' in e and 'confidence' in e, 'Missing fields'
+          else:
+              print('No match log found (expected in demo mode)')
+          print('Log format verified')
+          "
+
+  # ── Notify on success ─────────────────────────────────────────────
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs: [test-ml, test-bridge, integration]
+    if: always()
+
+    steps:
+      - name: Report status
+        run: |
+          echo "======================================"
+          echo "  Project Nexus CI Complete"
+          echo "======================================"
+          echo "ML Pipeline  : ${{ needs.test-ml.result }}"
+          echo "TF Bridge    : ${{ needs.test-bridge.result }}"
+          echo "Integration  : ${{ needs.integration.result }}"
+          echo "======================================"

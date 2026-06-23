@@ -1,0 +1,402 @@
+{
+  "final_metrics": {
+    "accuracy": 0.6267,
+    "macro_precision": 0.6052,
+    "macro_recall": 0.5997,
+    "macro_f1": 0.5954,
+    "per_class": {
+      "clean": {
+        "precision": 0.455,
+        "recall": 0.345,
+        "f1": 0.392,
+        "support": 29
+      },
+      "offside": {
+        "precision": 0.974,
+        "recall": 0.974,
+        "f1": 0.974,
+        "support": 39
+      },
+      "foul": {
+        "precision": 0.552,
+        "recall": 0.571,
+        "f1": 0.561,
+        "support": 28
+      },
+      "dive": {
+        "precision": 0.692,
+        "recall": 0.562,
+        "f1": 0.621,
+        "support": 32
+      },
+      "handball": {
+        "precision": 0.353,
+        "recall": 0.545,
+        "f1": 0.429,
+        "support": 22
+      }
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "task_loss": 1.5563,
+      "domain_loss": 2.0952,
+      "total_loss": 1.5563,
+      "lam": 0.0,
+      "accuracy": 0.3667,
+      "macro_precision": 0.3027,
+      "macro_recall": 0.3494,
+      "macro_f1": 0.295,
+      "per_class": {
+        "clean": {
+          "precision": 0.375,
+          "recall": 0.103,
+          "f1": 0.162,
+          "support": 29
+        },
+        "offside": {
+          "precision": 0.564,
+          "recall": 0.564,
+          "f1": 0.564,
+          "support": 39
+        },
+        "foul": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 28
+        },
+        "dive": {
+          "precision": 0.357,
+          "recall": 0.625,
+          "f1": 0.455,
+          "support": 32
+        },
+        "handball": {
+          "precision": 0.217,
+          "recall": 0.455,
+          "f1": 0.294,
+          "support": 22
+        }
+      },
+      "val_loss": 1.4034,
+      "lr": 0.00028869611057792606
+    },
+    {
+      "epoch": 2,
+      "task_loss": 1.3572,
+      "domain_loss": 1.7811,
+      "total_loss": 1.685,
+      "lam": 0.6134,
+      "accuracy": 0.48,
+      "macro_precision": 0.4348,
+      "macro_recall": 0.4306,
+      "macro_f1": 0.3889,
+      "per_class": {
+        "clean": {
+          "precision": 0.286,
+          "recall": 0.069,
+          "f1": 0.111,
+          "support": 29
+        },
+        "offside": {
+          "precision": 0.712,
+          "recall": 0.949,
+          "f1": 0.813,
+          "support": 39
+        },
+        "foul": {
+          "precision": 0.283,
+          "recall": 0.607,
+          "f1": 0.386,
+          "support": 28
+        },
+        "dive": {
+          "precision": 0.56,
+          "recall": 0.437,
+          "f1": 0.491,
+          "support": 32
+        },
+        "handball": {
+          "precision": 0.333,
+          "recall": 0.091,
+          "f1": 0.143,
+          "support": 22
+        }
+      },
+      "val_loss": 1.2081,
+      "lr": 0.0002565053570062023
+    },
+    {
+      "epoch": 3,
+      "task_loss": 1.1702,
+      "domain_loss": 1.4661,
+      "total_loss": 1.5622,
+      "lam": 0.8914,
+      "accuracy": 0.4467,
+      "macro_precision": 0.4463,
+      "macro_recall": 0.4245,
+      "macro_f1": 0.3771,
+      "per_class": {
+        "clean": {
+          "precision": 0.556,
+          "recall": 0.172,
+          "f1": 0.263,
+          "support": 29
+        },
+        "offside": {
+          "precision": 0.686,
+          "recall": 0.897,
+          "f1": 0.778,
+          "support": 39
+        },
+        "foul": {
+          "precision": 0.357,
+          "recall": 0.536,
+          "f1": 0.429,
+          "support": 28
+        },
+        "dive": {
+          "precision": 0.4,
+          "recall": 0.062,
+          "f1": 0.108,
+          "support": 32
+        },
+        "handball": {
+          "precision": 0.233,
+          "recall": 0.455,
+          "f1": 0.308,
+          "support": 22
+        }
+      },
+      "val_loss": 1.0953,
+      "lr": 0.00020832848970621582
+    },
+    {
+      "epoch": 4,
+      "task_loss": 1.0089,
+      "domain_loss": 1.4651,
+      "total_loss": 1.4365,
+      "lam": 0.9728,
+      "accuracy": 0.5733,
+      "macro_precision": 0.5334,
+      "macro_recall": 0.5458,
+      "macro_f1": 0.5373,
+      "per_class": {
+        "clean": {
+          "precision": 0.44,
+          "recall": 0.379,
+          "f1": 0.407,
+          "support": 29
+        },
+        "offside": {
+          "precision": 0.951,
+          "recall": 1.0,
+          "f1": 0.975,
+          "support": 39
+        },
+        "foul": {
+          "precision": 0.36,
+          "recall": 0.321,
+          "f1": 0.34,
+          "support": 28
+        },
+        "dive": {
+          "precision": 0.452,
+          "recall": 0.437,
+          "f1": 0.444,
+          "support": 32
+        },
+        "handball": {
+          "precision": 0.464,
+          "recall": 0.591,
+          "f1": 0.52,
+          "support": 22
+        }
+      },
+      "val_loss": 0.7921,
+      "lr": 0.00015149999999999997
+    },
+    {
+      "epoch": 5,
+      "task_loss": 0.933,
+      "domain_loss": 1.4493,
+      "total_loss": 1.3649,
+      "lam": 0.9934,
+      "accuracy": 0.5333,
+      "macro_precision": 0.5114,
+      "macro_recall": 0.5045,
+      "macro_f1": 0.5002,
+      "per_class": {
+        "clean": {
+          "precision": 0.455,
+          "recall": 0.345,
+          "f1": 0.392,
+          "support": 29
+        },
+        "offside": {
+          "precision": 0.973,
+          "recall": 0.923,
+          "f1": 0.947,
+          "support": 39
+        },
+        "foul": {
+          "precision": 0.364,
+          "recall": 0.286,
+          "f1": 0.32,
+          "support": 28
+        },
+        "dive": {
+          "precision": 0.469,
+          "recall": 0.469,
+          "f1": 0.469,
+          "support": 32
+        },
+        "handball": {
+          "precision": 0.297,
+          "recall": 0.5,
+          "f1": 0.373,
+          "support": 22
+        }
+      },
+      "val_loss": 0.7663,
+      "lr": 9.467151029378417e-05
+    },
+    {
+      "epoch": 6,
+      "task_loss": 0.8617,
+      "domain_loss": 1.4435,
+      "total_loss": 1.2941,
+      "lam": 0.9984,
+      "accuracy": 0.5333,
+      "macro_precision": 0.52,
+      "macro_recall": 0.5067,
+      "macro_f1": 0.5039,
+      "per_class": {
+        "clean": {
+          "precision": 0.296,
+          "recall": 0.276,
+          "f1": 0.286,
+          "support": 29
+        },
+        "offside": {
+          "precision": 1.0,
+          "recall": 0.897,
+          "f1": 0.946,
+          "support": 39
+        },
+        "foul": {
+          "precision": 0.472,
+          "recall": 0.607,
+          "f1": 0.531,
+          "support": 28
+        },
+        "dive": {
+          "precision": 0.55,
+          "recall": 0.344,
+          "f1": 0.423,
+          "support": 32
+        },
+        "handball": {
+          "precision": 0.281,
+          "recall": 0.409,
+          "f1": 0.333,
+          "support": 22
+        }
+      },
+      "val_loss": 0.7967,
+      "lr": 4.64946429937977e-05
+    },
+    {
+      "epoch": 7,
+      "task_loss": 0.8326,
+      "domain_loss": 1.4416,
+      "total_loss": 1.2649,
+      "lam": 0.9996,
+      "accuracy": 0.66,
+      "macro_precision": 0.6449,
+      "macro_recall": 0.64,
+      "macro_f1": 0.6313,
+      "per_class": {
+        "clean": {
+          "precision": 0.609,
+          "recall": 0.483,
+          "f1": 0.538,
+          "support": 29
+        },
+        "offside": {
+          "precision": 0.974,
+          "recall": 0.974,
+          "f1": 0.974,
+          "support": 39
+        },
+        "foul": {
+          "precision": 0.556,
+          "recall": 0.714,
+          "f1": 0.625,
+          "support": 28
+        },
+        "dive": {
+          "precision": 0.667,
+          "recall": 0.437,
+          "f1": 0.528,
+          "support": 32
+        },
+        "handball": {
+          "precision": 0.419,
+          "recall": 0.591,
+          "f1": 0.491,
+          "support": 22
+        }
+      },
+      "val_loss": 0.7205,
+      "lr": 1.430388942207392e-05
+    },
+    {
+      "epoch": 8,
+      "task_loss": 0.7976,
+      "domain_loss": 1.4473,
+      "total_loss": 1.2318,
+      "lam": 0.9999,
+      "accuracy": 0.6333,
+      "macro_precision": 0.6147,
+      "macro_recall": 0.6166,
+      "macro_f1": 0.5974,
+      "per_class": {
+        "clean": {
+          "precision": 0.562,
+          "recall": 0.31,
+          "f1": 0.4,
+          "support": 29
+        },
+        "offside": {
+          "precision": 0.975,
+          "recall": 1.0,
+          "f1": 0.987,
+          "support": 39
+        },
+        "foul": {
+          "precision": 0.519,
+          "recall": 0.5,
+          "f1": 0.509,
+          "support": 28
+        },
+        "dive": {
+          "precision": 0.593,
+          "recall": 0.5,
+          "f1": 0.542,
+          "support": 32
+        },
+        "handball": {
+          "precision": 0.425,
+          "recall": 0.773,
+          "f1": 0.548,
+          "support": 22
+        }
+      },
+      "val_loss": 0.6787,
+      "lr": 2.9999999999999997e-06
+    }
+  ]
+}
