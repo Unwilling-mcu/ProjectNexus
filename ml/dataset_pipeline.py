@@ -779,7 +779,7 @@ def demo():
                         format="%(asctime)s [%(name)s] %(message)s",
                         datefmt="%H:%M:%S")
 
-    out_dir = "/home/claude/nexus/dataset/synthetic_sequences"
+    out_dir = str(Path(__file__).parent.parent / "dataset" / "synthetic_sequences")
     print("\n[NexusDataset] Generating synthetic training data...")
     gen = SyntheticDataGenerator(out_dir, n_per_class=120, n_domains=4)
     total = gen.generate_all()

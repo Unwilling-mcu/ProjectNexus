@@ -17,6 +17,7 @@ Architecture
 """
 
 import time
+from pathlib import Path
 import json
 import asyncio
 import threading
@@ -527,7 +528,7 @@ def run_demo(n_frames: int = 300, fps: float = 50.0):
         pipeline.feed_frame(fake_frame, timestamp)
 
     elapsed = time.time() - t_start
-    pipeline.dispatcher.export_match_log("/home/claude/nexus/ml/demo_match_log.json")
+    pipeline.dispatcher.export_match_log(str(Path(__file__).parent / "demo_match_log.json"))
 
     print(f"\n[RefLens] {n_frames} frames processed in {elapsed:.2f}s "
           f"({n_frames / elapsed:.1f} fps effective)")
