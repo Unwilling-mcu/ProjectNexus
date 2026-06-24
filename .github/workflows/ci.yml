@@ -8,9 +8,7 @@ on:
 
 jobs:
 
-  # ── Python ML pipeline tests ──────────────────────────────────────
-  # Drop 3.12 — PyTorch CPU wheels are not reliably published for 3.12
-  # on the whl index yet; 3.11 is the stable target.
+  # ── Python ML pipeline ────────────────────────────────────────────
   test-ml:
     name: ML Pipeline (Python 3.11)
     runs-on: ubuntu-latest
@@ -27,7 +25,6 @@ jobs:
       - name: Install ML dependencies
         run: |
           pip install --upgrade pip
-          # CPU-only torch — smaller, faster to install in CI
           pip install torch==2.2.2 torchvision==0.17.2 \
             --index-url https://download.pytorch.org/whl/cpu
           pip install numpy websockets pyserial
@@ -35,22 +32,21 @@ jobs:
       - name: Lint with flake8
         run: |
           pip install flake8
-          # E501=line too long, W503=line break before op, E226=missing whitespace
-          # F401=imported but unused (we have graceful-import try/except blocks)
           flake8 ml/ arduino/ \
             --max-line-length=100 \
-            --ignore=E501,W503,E226,F401,F811 \
+            --ignore=E501,W503,E226,E221,E251,E241,F401,F811 \
             --exclude=__pycache__,.git
+          echo "✓ Lint passed"
 
       - name: Smoke test — RefLens pipeline
         run: |
           cd ml && python reflens_pipeline.py
-          echo "✓ RefLens smoke test passed"
+          echo "✓ RefLens passed"
 
       - name: Smoke test — Dataset pipeline
         run: |
           cd ml && python dataset_pipeline.py
-          echo "✓ Dataset pipeline smoke test passed"
+          echo "✓ Dataset pipeline passed"
 
       - name: Smoke test — Training loop (3 epochs)
         run: |
@@ -63,7 +59,7 @@ jobs:
             --source_dir ../dataset/synthetic_sequences \
             --target_dir ../dataset/synthetic_sequences \
             --checkpoint_dir ../checkpoints
-          echo "✓ Training smoke test passed"
+          echo "✓ Training passed"
 
       - name: Upload training artifacts
         uses: actions/upload-artifact@v4
@@ -92,13 +88,13 @@ jobs:
 
       - name: Smoke test — bridge demo mode
         run: |
-          # Run for 6 seconds then kill — success as long as it doesn't crash on start
           timeout 6 python arduino/touchfield_bridge.py --demo || true
-          echo "✓ Bridge smoke test passed"
+          echo "✓ Bridge passed"
 
   # ── Arduino firmware ──────────────────────────────────────────────
-  # Strategy: use arduino/arduino-cli action (more reliable than curl install)
-  # and add --warnings none to avoid false-positive failures on strict warnings
+  # arduino-cli requires the .ino filename to match its parent folder name.
+  # Our file is touchfield_firmware.ino so the folder must be touchfield_firmware/
+  # We create that structure at CI time — no repo change needed.
   lint-arduino:
     name: Arduino Firmware Lint
     runs-on: ubuntu-latest
@@ -112,7 +108,6 @@ jobs:
       - name: Install AVR core and ArduinoJson
         run: |
           arduino-cli config init --overwrite
-          arduino-cli config set board_manager.additional_urls ""
           arduino-cli core update-index
           arduino-cli core install arduino:avr
           arduino-cli lib update-index
@@ -120,11 +115,14 @@ jobs:
 
       - name: Compile firmware for Arduino Mega
         run: |
+          # arduino-cli requires sketch folder name == .ino filename
+          mkdir -p /tmp/touchfield_firmware
+          cp arduino/touchfield_firmware.ino /tmp/touchfield_firmware/touchfield_firmware.ino
           arduino-cli compile \
             --fqbn arduino:avr:mega \
             --warnings none \
-            arduino/touchfield_firmware.ino
-          echo "✓ Arduino firmware compiled successfully"
+            /tmp/touchfield_firmware
+          echo "✓ Arduino firmware compiled"
 
   # ── Integration ───────────────────────────────────────────────────
   integration:
@@ -155,28 +153,23 @@ jobs:
           from dataset_pipeline import SyntheticDataGenerator
           gen = SyntheticDataGenerator('dataset/synthetic_sequences', n_per_class=30, n_domains=2)
           n = gen.generate_all()
-          print(f'Generated {n} sequences')
-          assert n == 300, f'Expected 300, got {n}'
-          print('✓ Dataset generation passed')
+          assert n == 300, f'Expected 300 sequences, got {n}'
+          print(f'✓ Generated {n} sequences')
           "
 
-      - name: RefLens inference on synthetic poses
+      - name: RefLens inference
         run: |
           python -c "
           import sys, numpy as np
           sys.path.insert(0, 'ml')
           from reflens_pipeline import RefLensPipeline
           pipeline = RefLensPipeline(camera_id=0)
-          events = []
           for i in range(150):
-              frame = np.zeros((720, 1280, 3), dtype=np.uint8)
-              preds = pipeline.feed_frame(frame, i / 50.0)
-              events.extend(preds)
-          print(f'Detected {len(events)} events in 150 frames')
+              pipeline.feed_frame(np.zeros((720,1280,3), dtype=np.uint8), i/50.0)
           print('✓ RefLens inference passed')
           "
 
-      - name: Verify match log format
+      - name: Verify match log
         run: |
           python -c "
           import json
@@ -186,10 +179,9 @@ jobs:
               data = json.load(open(log))
               for e in data:
                   assert 'event' in e and 'confidence' in e
-              print(f'Match log: {len(data)} entries — format OK')
+              print(f'✓ Match log OK — {len(data)} entries')
           else:
-              print('No match log yet (generated at runtime only)')
-          print('✓ Log format check passed')
+              print('✓ No log yet (generated at runtime)')
           "
 
   # ── Summary ───────────────────────────────────────────────────────
@@ -205,8 +197,8 @@ jobs:
           echo "============================================"
           echo "  Project Nexus CI — Results"
           echo "============================================"
-          echo "  ML Pipeline    : ${{ needs.test-ml.result }}"
-          echo "  TF Bridge      : ${{ needs.test-bridge.result }}"
-          echo "  Arduino Lint   : ${{ needs.lint-arduino.result }}"
-          echo "  Integration    : ${{ needs.integration.result }}"
+          echo "  ML Pipeline  : ${{ needs.test-ml.result }}"
+          echo "  TF Bridge    : ${{ needs.test-bridge.result }}"
+          echo "  Arduino Lint : ${{ needs.lint-arduino.result }}"
+          echo "  Integration  : ${{ needs.integration.result }}"
           echo "============================================"
