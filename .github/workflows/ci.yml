@@ -25,9 +25,11 @@ jobs:
       - name: Install ML dependencies
         run: |
           pip install --upgrade pip
+          # Pin numpy<2 — torch 2.2.2 was compiled against NumPy 1.x
+          pip install "numpy<2"
           pip install torch==2.2.2 torchvision==0.17.2 \
             --index-url https://download.pytorch.org/whl/cpu
-          pip install numpy websockets pyserial
+          pip install websockets pyserial
 
       - name: Lint with flake8
         run: |
@@ -84,7 +86,7 @@ jobs:
           cache: pip
 
       - name: Install bridge dependencies
-        run: pip install numpy websockets pyserial
+        run: pip install "numpy<2" websockets pyserial
 
       - name: Smoke test — bridge demo mode
         run: |
@@ -115,7 +117,7 @@ jobs:
           # arduino-cli requires sketch folder name == .ino filename
           mkdir -p /tmp/touchfield_firmware
           cp arduino/touchfield_firmware.ino /tmp/touchfield_firmware/touchfield_firmware.ino
-          # PIN_SPI_MOSI is a macro defined in Arduino.h — rename our variable
+          # Rename our SPI pin constants to avoid clash with Arduino's own macros
           sed -i 's/static const uint8_t PIN_SPI_MOSI/static const uint8_t NEX_SPI_MOSI/g' \
             /tmp/touchfield_firmware/touchfield_firmware.ino
           sed -i 's/PIN_SPI_MOSI/NEX_SPI_MOSI/g' \
@@ -148,9 +150,10 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          pip install "numpy<2"
           pip install torch==2.2.2 torchvision==0.17.2 \
             --index-url https://download.pytorch.org/whl/cpu
-          pip install numpy websockets pyserial
+          pip install websockets pyserial
 
       - name: Generate synthetic dataset
         run: |
@@ -159,7 +162,8 @@ jobs:
           from dataset_pipeline import SyntheticDataGenerator
           gen = SyntheticDataGenerator('dataset/synthetic_sequences', n_per_class=30, n_domains=2)
           n = gen.generate_all()
-          assert n == 300, f'Expected 300, got {n}'
+          # n_per_class=30 × 5 classes = 150 sequences total
+          assert n == 150, f'Expected 150, got {n}'
           print(f'✓ Generated {n} sequences')
           "
 
